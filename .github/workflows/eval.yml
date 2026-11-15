@@ -1,0 +1,50 @@
+name: rag-eval
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+      - name: Unit tests
+        run: pytest -q
+      - name: Cache HF models and dataset
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            data
+          key: hf-${{ hashFiles('ragbench/retrieval.py', 'ragbench/data.py') }}
+      - name: Eval (20 dev questions, official distractor setting)
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        run: python -m ragbench.run_eval --split dev --n 20 --out runs/ci
+      - name: Compare with baseline
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        run: python -m ragbench.compare baselines/ci_summary.json runs/ci/summary.json --md-out comment.md
+      - name: Post PR comment
+        if: ${{ always() && github.event_name == 'pull_request' && hashFiles('comment.md') != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: comment.md
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      LLM_BASE_URL: https://api.openai.com/v1
+      LLM_MODEL: gpt-5.6-luna
+      LLM_REASONING_EFFORT: low
+      RAGBENCH_WAIT_ON_DAILY_LIMIT: "0"  # fail fast instead of waiting on rate limits

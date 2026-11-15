@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.cache/
+data/
+runs/*/traces.jsonl
+runs/*.log
+runs/dev_agents/
