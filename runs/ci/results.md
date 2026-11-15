@@ -1,20 +1,11 @@
 Model `gpt-5.6-luna` · 20 MuSiQue-Ans dev split · MuSiQue official setting: each question searches its own 20 paragraphs · total cost $0.05
 
-| Pipeline | LLM-as-a-judge | F1 | EM | All needed paragraphs found | Passages given to the model | Searches / q | Gain over hybrid | LLM calls / q | Tokens / q | $ / 1k q |
+| Pipeline | F1 | LLM-as-a-judge | EM | All needed paragraphs found | Passages given to the model | Searches / q | F1 gain over hybrid | LLM calls / q | Tokens / q | $ / 1k q |
 |---|---|---|---|---|---|---|---|---|---|---|
-| hybrid | 60.0% | 54.6% | 45.0% | 15.0% | 5.0 | 1.0 | — | 1.0 | 864 | 0.16 |
-| llm_rerank | 90.0% | 77.2% | 70.0% | 90.0% | 5.0 | 1.0 | +30.0 pts | 2.0 | 3,487 | 0.52 |
-| agentic | 90.0% | 83.4% | 75.0% | 95.0% | 6.8 | 2.5 | +30.0 pts | 5.8 | 10,130 | 1.58 |
-| oracle | 85.0% | 77.4% | 65.0% | 100.0% | 3.0 | 0.0 | +25.0 pts | 1.0 | 575 | 0.10 |
-
-**LLM-as-a-judge by number of hops** · questions per hop: 2-hop: 8, 3-hop: 4, 4-hop: 8
-
-| Pipeline | 2-hop | 3-hop | 4-hop |
-|---|---|---|---|
-| hybrid | 87.5% | 50.0% | 37.5% |
-| llm_rerank | 100.0% | 100.0% | 75.0% |
-| agentic | 100.0% | 100.0% | 75.0% |
-| oracle | 100.0% | 100.0% | 62.5% |
+| hybrid | 54.6% | 60.0% | 45.0% | 15.0% | 5.0 | 1.0 | — | 1.0 | 864 | 0.16 |
+| llm_rerank | 77.2% | 90.0% | 70.0% | 90.0% | 5.0 | 1.0 | +22.5 pts | 2.0 | 3,487 | 0.52 |
+| agentic | 83.4% | 90.0% | 75.0% | 95.0% | 6.8 | 2.5 | +28.8 pts | 5.8 | 10,130 | 1.58 |
+| oracle | 77.4% | 85.0% | 65.0% | 100.0% | 3.0 | 0.0 | +22.8 pts | 1.0 | 575 | 0.10 |
 
 **F1 by number of hops** · questions per hop: 2-hop: 8, 3-hop: 4, 4-hop: 8
 
@@ -24,6 +15,15 @@ Model `gpt-5.6-luna` · 20 MuSiQue-Ans dev split · MuSiQue official setting: ea
 | llm_rerank | 95.8% | 80.0% | 57.1% |
 | agentic | 95.8% | 80.0% | 72.8% |
 | oracle | 95.8% | 75.0% | 60.3% |
+
+**LLM-as-a-judge by number of hops** · questions per hop: 2-hop: 8, 3-hop: 4, 4-hop: 8
+
+| Pipeline | 2-hop | 3-hop | 4-hop |
+|---|---|---|---|
+| hybrid | 87.5% | 50.0% | 37.5% |
+| llm_rerank | 100.0% | 100.0% | 75.0% |
+| agentic | 100.0% | 100.0% | 75.0% |
+| oracle | 100.0% | 100.0% | 62.5% |
 
 **EM by number of hops** · questions per hop: 2-hop: 8, 3-hop: 4, 4-hop: 8
 

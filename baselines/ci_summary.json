@@ -36,7 +36,6 @@
       },
       "n_passages": 5.0,
       "llm_calls": 1.0,
-      "llm_failed_calls_total": 0,
       "tokens": 863.9,
       "cost_usd": 0.000164565,
       "llm_seconds": 2.22985,
@@ -47,7 +46,7 @@
         "retrieval_miss": 8,
         "reasoning_miss": 0
       },
-      "judge_gain_vs_base": {
+      "f1_gain_vs_base": {
         "mean": 0.0,
         "low95": 0.0,
         "high95": 0.0
@@ -84,7 +83,6 @@
       },
       "n_passages": 5.0,
       "llm_calls": 2.0,
-      "llm_failed_calls_total": 0,
       "tokens": 3487.25,
       "cost_usd": 0.0005193999999999999,
       "llm_seconds": 4.08045,
@@ -95,10 +93,10 @@
         "retrieval_miss": 0,
         "reasoning_miss": 2
       },
-      "judge_gain_vs_base": {
-        "mean": 0.3,
-        "low95": 0.1,
-        "high95": 0.5
+      "f1_gain_vs_base": {
+        "mean": 0.22547619047619047,
+        "low95": 0.08142857142857143,
+        "high95": 0.3914285714285714
       }
     },
     "agentic": {
@@ -132,7 +130,6 @@
       },
       "n_passages": 6.85,
       "llm_calls": 5.75,
-      "llm_failed_calls_total": 0,
       "tokens": 10130.4,
       "cost_usd": 0.001578065,
       "llm_seconds": 12.359950000000001,
@@ -143,10 +140,10 @@
         "retrieval_miss": 0,
         "reasoning_miss": 2
       },
-      "judge_gain_vs_base": {
-        "mean": 0.3,
-        "low95": 0.1,
-        "high95": 0.5
+      "f1_gain_vs_base": {
+        "mean": 0.2879761904761905,
+        "low95": 0.12797619047619047,
+        "high95": 0.4619047619047619
       }
     },
     "oracle": {
@@ -180,7 +177,6 @@
       },
       "n_passages": 3.0,
       "llm_calls": 1.0,
-      "llm_failed_calls_total": 0,
       "tokens": 575.3,
       "cost_usd": 0.000103305,
       "llm_seconds": 1.44935,
@@ -191,10 +187,10 @@
         "retrieval_miss": 0,
         "reasoning_miss": 3
       },
-      "judge_gain_vs_base": {
-        "mean": 0.25,
-        "low95": 0.1,
-        "high95": 0.45
+      "f1_gain_vs_base": {
+        "mean": 0.22797619047619047,
+        "low95": 0.09095238095238092,
+        "high95": 0.38142857142857145
       }
     }
   },

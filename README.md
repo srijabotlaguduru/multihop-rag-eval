@@ -34,16 +34,26 @@ which is MuSiQue's official setting.
 
 \* Every metric is defined in the [Evaluation](#evaluation) section, along with where it can mislead.
 
-| Pipeline | LLM-as-a-judge\* | F1\* | EM\* | All needed paragraphs found\* |
+| Pipeline | F1\* | LLM-as-a-judge\* | EM\* | All needed paragraphs found\* |
 |---|---|---|---|---|
-| hybrid | 54.3% | 48.6% | 33.3% | 16.7% |
-| llm_rerank | 77.1% | 68.2% | 53.3% | 87.6% |
-| agentic | 77.6% | 69.5% | 53.8% | 92.4% |
-| oracle\* | 80.0% | 69.9% | 52.9% | 100% |
+| hybrid | 48.6% | 54.3% | 33.3% | 16.7% |
+| llm_rerank | 68.2% | 77.1% | 53.3% | 87.6% |
+| agentic | 69.5% | 77.6% | 53.8% | 92.4% |
+| oracle\* | 69.9% | 80.0% | 52.9% | 100% |
 
-The reranker is the big jump. The agent adds only 0.5 points on top, which is 1 question out of 210.
+The reranker is the big jump: +19.6 points of F1, far too large to be luck. The agent adds only 1.3 points on top, small enough
+to be chance.
 
-**Accuracy by number of hops\*** · LLM-as-a-judge · n = 70 per hop
+**F1 by number of hops\*** · n = 70 per hop
+
+| Pipeline | 2-hop | 3-hop | 4-hop |
+|---|---|---|---|
+| hybrid | 58.7% | 45.2% | 41.8% |
+| llm_rerank | 70.3% | 71.1% | 63.2% |
+| agentic | 69.7% | 71.5% | 67.2% |
+| oracle | 75.2% | 73.2% | 61.4% |
+
+**LLM-as-a-judge by number of hops** · n = 70 per hop
 
 | Pipeline | 2-hop | 3-hop | 4-hop |
 |---|---|---|---|
@@ -52,10 +62,10 @@ The reranker is the big jump. The agent adds only 0.5 points on top, which is 1 
 | agentic | 84.3% | 81.4% | 67.1% |
 | oracle | 90.0% | 84.3% | 65.7% |
 
-Every pipeline gets worse as questions get deeper. The agent is behind llm_rerank on 2-hop questions and slightly ahead on 3-
-and 4-hop.
+All pipelines score lowest on 4-hop questions. On 2- and 3-hop questions the agent and llm_rerank are level; on 4-hop
+questions the agent is 4 points ahead on F1. That gap is a trend on 70 questions, not proof.
 
-**Where the errors come from** · number of questions out of 210
+**Where the errors come from** · number of questions out of 210, counted with LLM-as-a-judge because F1 gives partial credit and has no clear right or wrong
 
 | Pipeline | Correct | Retrieval miss\* | Reasoning miss\* |
 |---|---|---|---|
@@ -83,18 +93,18 @@ The agent costs 2.6 times as much as llm_rerank and takes 2.6 times as long. The
 1. **Plain hybrid search can't find multi-hop evidence.** It hands the model every needed paragraph for only 17% of questions,
    and 93 of its 96 errors are retrieval misses.
 2. **An LLM reranker fixes that.** Reading all 20 candidates together, it can pick paragraphs that only matter in combination:
-   one names the founder, another gives the founder's spouse. Accuracy jumps from 54% to 77%, a gain far too large to be luck.
-3. **An agent finds even more evidence, but doesn't answer better.** Its extra searches cut retrieval misses from 13 to 7, but
-   reasoning misses rise from 35 to 40, because more passages also means more distractors to reason through. It ends at 77.6%
-   vs 77.1%, a difference small enough to be chance, at 2.6 times the cost and time.
-4. **The agent's extra searches pay off only on deeper questions.** It's 2 questions behind on 2-hop and 2 and 1 ahead on 3- and
-   4-hop, where a single search is most likely to miss a link. On 70 questions per hop that's a trend, not proof.
-5. **What's left is reasoning, not search.** Even handed exactly the right paragraphs, the model reaches only 80%, and on 4-hop
-   questions the oracle does no better than llm_rerank. Some misses are reasoning slips; others are ambiguous or mislabeled gold
-   answers.
+   one names the founder, another gives the founder's spouse. F1 jumps from 49% to 68%, a gain far too large to be luck.
+3. **An agent finds even more evidence, but barely answers better.** Its extra searches cut retrieval misses from 13 to 7, but
+   reasoning misses rise from 35 to 40, because more passages also means more distractors to reason through. It ends at 69.5%
+   vs 68.2% F1, a difference small enough to be chance, at 2.6 times the cost and time.
+4. **The agent's extra searches pay off only on the deepest questions.** It's level with llm_rerank on 2- and 3-hop questions
+   and 4 points ahead on 4-hop, where a single search is most likely to miss a link. On 70 questions per hop that's a trend,
+   not proof.
+5. **What's left is reasoning, not search.** Even handed exactly the right paragraphs, the model reaches only 70% F1. Some misses
+   are reasoning slips; others are ambiguous or mislabeled gold answers.
 
 **Which to use:** **llm_rerank.** It matches the agent's accuracy for less than half the cost and time. If many of your questions
-are deep, route only the 3+ hop ones to the agent. The broader lesson: measure before adding complexity.
+are 4-hop or deeper, route only those to the agent. The broader lesson: measure before adding complexity.
 
 ## Evaluation
 
@@ -102,8 +112,8 @@ are deep, route only the 3+ hop ones to the agent. The broader lesson: measure b
 
 | Metric | What it measures | Where it can mislead |
 |---|---|---|
-| **LLM-as-a-judge** | The main accuracy score. An exact match is correct; otherwise an LLM decides whether the answer *means* the same as the gold answer, so "22 times" for "22" counts. | It can be lenient on vague answers, and here the same model grades its own answers. |
-| **F1** | The share of words the answer has in common with the gold answer, MuSiQue's official metric. | It also gives partial credit to wrong answers that share words: "Summit County" for "Cabarrus County" scores 50%. |
+| **F1** | The main score. The share of words the answer has in common with the gold answer. It is MuSiQue's official metric and needs no LLM, so it is fully reproducible. | It also gives partial credit to wrong answers that share words: "Summit County" for "Cabarrus County" scores 50%. Correct answers worded differently lose points: "22 times" for "22" scores 67%. |
+| **LLM-as-a-judge** | The second score. An exact match is correct; otherwise an LLM decides whether the answer *means* the same as the gold answer, so "22 times" for "22" counts. | It can be lenient on vague answers, and here the same model grades its own answers. |
 | **EM** | Exact match: correct only if the answer is word for word the gold answer, ignoring case and punctuation. | It ignores meaning, so "22 times" for "22" is wrong. That's why it's the lowest score in every row. |
 
 **Evidence metrics**
@@ -165,7 +175,8 @@ tests only.
 ## Limitations
 
 - 210 test questions and one model: small differences, including the per-hop ones, are trends, not proof.
-- LLM-as-a-judge uses the same model that wrote the answers, and it's occasionally lenient. F1 and EM are shown next to it.
+- F1 gives partial credit for word overlap, so it can't say outright whether an answer is right. LLM-as-a-judge does, but it
+  uses the same model that wrote the answers and is occasionally lenient. Both are shown, with EM.
 - One benchmark, in MuSiQue's 20-paragraph setting. With a much larger document collection, retrieval gets harder and the
   agent would likely matter more.
 - MuSiQue-Ans only (answerable questions); abstention isn't measured.

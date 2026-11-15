@@ -14,14 +14,14 @@ from pathlib import Path
 
 
 def _acc(m: dict) -> float:
-    return m.get("judge", m["em"])  # LLM-as-a-judge accuracy, the headline
+    return m["f1"]  # F1, the headline metric
 
 
 def compare(base: dict, new: dict, max_drop: float) -> tuple[str, bool]:
     lines = [
         f"### RAG eval: {new['n_questions']} questions, model `{new['model']}`",
         "",
-        "| Pipeline | LLM-as-a-judge (baseline → PR) | Δ | Evidence recall | Δ | Tokens / q | Status |",
+        "| Pipeline | F1 (baseline → PR) | Δ | Evidence recall | Δ | Tokens / q | Status |",
         "|---|---|---|---|---|---|---|",
     ]
     ok = True
@@ -37,7 +37,7 @@ def compare(base: dict, new: dict, max_drop: float) -> tuple[str, bool]:
             f"| {p} | {_acc(b):.1%} → {_acc(m):.1%} | {da:+.1%} | {m['support_recall']:.1%} | {dr:+.1%} | "
             f"{b['tokens']:,.0f} → {m['tokens']:,.0f} | {'❌ regression' if bad else '✅'} |"
         )
-    lines += ["", f"Gate: fail if any pipeline's LLM-as-a-judge accuracy drops by more than {max_drop:.0%}."]
+    lines += ["", f"Gate: fail if any pipeline's F1 drops by more than {max_drop:.0%}."]
     return "\n".join(lines) + "\n", ok
 
 

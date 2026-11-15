@@ -6,9 +6,9 @@ official setting (each question searches its own 20 paragraphs).
 Writes runs/<name>/traces.jsonl (per question/pipeline), summary.json and results.md.
 Safe to interrupt and re-run: LLM calls are cached, so it resumes where it stopped.
 
-Metrics: LLM-as-a-judge accuracy (headline; EM first, the judge only checks answers EM marks
-wrong), F1 and EM against the gold answer and its aliases, evidence recall, and a
-retrieval-miss vs reasoning-miss split of the errors.
+Metrics: F1 (headline, MuSiQue's official metric), LLM-as-a-judge accuracy (EM first; the judge
+only checks answers EM marks wrong) and EM, against the gold answer and its aliases; evidence
+recall; and a retrieval-miss vs reasoning-miss split of the errors (judged correct or not).
 """
 from __future__ import annotations
 
@@ -84,10 +84,10 @@ def evaluate(split: str, pipelines: list[str], out: Path, n: int | None = None, 
                 fh.write(json.dumps(row) + "\n")
                 fh.flush()
             if qi % 10 == 0 or qi == len(sample):
-                running = {p: sum(r["judge"] for r in rows if r["pipeline"] == p) / qi for p in pipelines}
+                running = {p: sum(r["f1"] for r in rows if r["pipeline"] == p) / qi for p in pipelines}
                 spent = sum(r["cost_usd"] for r in rows) + judge_cost
                 print(
-                    f"[{qi}/{len(sample)}] {time.time() - t0:.0f}s ${spent:.3f}  judge: "
+                    f"[{qi}/{len(sample)}] {time.time() - t0:.0f}s ${spent:.3f}  F1: "
                     + "  ".join(f"{p}={v:.2f}" for p, v in running.items()),
                     flush=True,
                 )
@@ -126,7 +126,7 @@ def summarize(rows, pipelines, model, corpus_q, corpus_size, seed) -> dict:
         "pipelines": {},
     }
     for p, rs in by.items():
-        delta, lo, hi = paired_bootstrap([r["judge"] for r in by[base]], [r["judge"] for r in rs])
+        delta, lo, hi = paired_bootstrap([r["f1"] for r in by[base]], [r["f1"] for r in rs])
         out["pipelines"][p] = {
             "judge": _mean(r["judge"] for r in rs),
             "em": _mean(r["em"] for r in rs),
@@ -153,7 +153,7 @@ def summarize(rows, pipelines, model, corpus_q, corpus_size, seed) -> dict:
             "failures": {
                 k: sum(r["failure"] == k for r in rs) for k in ("correct", "retrieval_miss", "reasoning_miss")
             },
-            "judge_gain_vs_base": {"mean": delta, "low95": lo, "high95": hi},
+            "f1_gain_vs_base": {"mean": delta, "low95": lo, "high95": hi},
         }
     return out
 
@@ -167,20 +167,20 @@ def to_markdown(s: dict) -> str:
         f"searches its own 20 paragraphs"
         + (f" · total cost ${s['total_cost_usd']:.2f}" if "total_cost_usd" in s else ""),
         "",
-        f"| Pipeline | LLM-as-a-judge | F1 | EM | All needed paragraphs found | Passages given to the model | "
-        f"Searches / q | Gain over {base} | LLM calls / q | Tokens / q | $ / 1k q |",
+        f"| Pipeline | F1 | LLM-as-a-judge | EM | All needed paragraphs found | Passages given to the model | "
+        f"Searches / q | F1 gain over {base} | LLM calls / q | Tokens / q | $ / 1k q |",
         "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for p, m in P.items():
-        gain = "—" if p == base else f"{100 * m['judge_gain_vs_base']['mean']:+.1f} pts"
+        gain = "—" if p == base else f"{100 * m['f1_gain_vs_base']['mean']:+.1f} pts"
         lines.append(
-            f"| {p} | {m['judge']:.1%} | {m['f1']:.1%} | {m['em']:.1%} | {m['full_support']:.1%} | "
+            f"| {p} | {m['f1']:.1%} | {m['judge']:.1%} | {m['em']:.1%} | {m['full_support']:.1%} | "
             f"{m['n_passages']:.1f} | {m['searches']:.1f} | {gain} | {m['llm_calls']:.1f} | {m['tokens']:,.0f} | "
             f"{1000 * m['cost_usd']:.2f} |"
         )
     hops = list(next(iter(P.values()))["by_hops"])
     n_each = ", ".join(f"{h}-hop: {P[base]['by_hops'][h]['n']}" for h in hops)
-    for metric, title, fmt in (("judge", "LLM-as-a-judge", "{:.1%}"), ("f1", "F1", "{:.1%}"), ("em", "EM", "{:.1%}")):
+    for metric, title, fmt in (("f1", "F1", "{:.1%}"), ("judge", "LLM-as-a-judge", "{:.1%}"), ("em", "EM", "{:.1%}")):
         lines += ["", f"**{title} by number of hops** · questions per hop: {n_each}", "",
                   "| Pipeline | " + " | ".join(f"{h}-hop" for h in hops) + " |", "|---|" + "---|" * len(hops)]
         for p, m in P.items():
