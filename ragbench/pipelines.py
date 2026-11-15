@@ -1,8 +1,8 @@
 """RAG pipelines, each adding one thing to the previous one. All share one answer prompt.
 
 1. hybrid       hybrid search (BM25 + FAISS, reciprocal rank fusion) top-5 -> answer
-2. llm_rerank   hybrid top-20 -> listwise LLM reranker -> top-6 -> answer
-3. agentic      LangGraph loop: retrieve (hybrid -> LLM rerank) -> reflect ("is this enough?
+2. llm_rerank   hybrid top-20 -> listwise LLM reranker -> top-5 -> answer
+3. agentic      LangGraph loop: retrieve (hybrid -> LLM rerank, top-5 each) -> reflect ("is this enough?
                 what's missing?") -> retrieve again, up to 4 rounds -> answer (agent_graph.py)
 
 Reference point:
@@ -19,7 +19,7 @@ import re
 
 from .data import Passage
 from .llm import LLM
-from .retrieval import Retriever
+from .retrieval import RERANK_CANDIDATES, TOP_K, Retriever
 
 # Passages longer than this are truncated in prompts (about a fifth of MuSiQue's gold
 # paragraphs exceed 700 characters, so the default keeps nearly all of them whole).
@@ -69,12 +69,12 @@ def _dedupe(ps: list[Passage]) -> list[Passage]:
 
 # --------------------------------------------------------------------------------------
 def hybrid(llm: LLM, r: Retriever, q: str) -> dict:
-    ps = r.hybrid(q, k=5)
+    ps = r.hybrid(q, k=TOP_K)
     return {"answer": answer(llm, q, ps), "passages": ps, "trace": [{"search": q}]}
 
 
 def llm_rerank(llm: LLM, r: Retriever, q: str) -> dict:
-    ps = r.hybrid_llm_rerank(q, llm, k=6, candidates=20)
+    ps = r.hybrid_llm_rerank(q, llm, k=TOP_K, candidates=RERANK_CANDIDATES)
     return {"answer": answer(llm, q, ps), "passages": ps, "trace": [{"search": q}]}
 
 

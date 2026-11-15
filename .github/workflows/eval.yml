@@ -47,4 +47,3 @@ jobs:
       LLM_BASE_URL: https://api.openai.com/v1
       LLM_MODEL: gpt-5.6-luna
       LLM_REASONING_EFFORT: low
-      RAGBENCH_WAIT_ON_DAILY_LIMIT: "0"  # fail fast instead of waiting on rate limits

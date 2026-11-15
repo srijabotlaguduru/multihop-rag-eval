@@ -6,8 +6,7 @@
   "seed": 13,
   "pipelines": {
     "hybrid": {
-      "judge_acc": 0.6,
-      "acc": 0.5,
+      "judge": 0.6,
       "em": 0.45,
       "f1": 0.5464285714285715,
       "support_recall": 0.5541666666666667,
@@ -15,24 +14,24 @@
       "by_hops": {
         "2": {
           "n": 8,
-          "judge_acc": 0.875,
-          "acc": 0.75,
+          "judge": 0.875,
+          "em": 0.75,
           "f1": 0.7857142857142857,
-          "support_recall": 0.625
+          "full_support": 0.375
         },
         "3": {
           "n": 4,
-          "judge_acc": 0.5,
-          "acc": 0.25,
+          "judge": 0.5,
+          "em": 0.25,
           "f1": 0.375,
-          "support_recall": 0.5833333333333333
+          "full_support": 0.0
         },
         "4": {
           "n": 8,
-          "judge_acc": 0.375,
-          "acc": 0.375,
+          "judge": 0.375,
+          "em": 0.25,
           "f1": 0.3928571428571429,
-          "support_recall": 0.46875
+          "full_support": 0.0
         }
       },
       "n_passages": 5.0,
@@ -41,126 +40,117 @@
       "tokens": 863.9,
       "cost_usd": 0.000164565,
       "llm_seconds": 2.22985,
-      "retrieval_seconds": 0.04835,
+      "retrieval_seconds": 0.059750000000000004,
       "searches": 1.0,
       "failures": {
         "correct": 12,
         "retrieval_miss": 8,
         "reasoning_miss": 0
       },
-      "acc_delta_vs_base": {
+      "judge_gain_vs_base": {
         "mean": 0.0,
-        "ci95": [
-          0.0,
-          0.0
-        ]
+        "low95": 0.0,
+        "high95": 0.0
       }
     },
     "llm_rerank": {
-      "judge_acc": 0.85,
-      "acc": 0.75,
+      "judge": 0.9,
       "em": 0.7,
-      "f1": 0.7872893772893772,
-      "support_recall": 0.9625,
-      "full_support": 0.85,
+      "f1": 0.7719047619047619,
+      "support_recall": 0.975,
+      "full_support": 0.9,
       "by_hops": {
         "2": {
           "n": 8,
-          "judge_acc": 1.0,
-          "acc": 0.875,
+          "judge": 1.0,
+          "em": 0.875,
           "f1": 0.9583333333333333,
-          "support_recall": 1.0
+          "full_support": 1.0
         },
         "3": {
           "n": 4,
-          "judge_acc": 1.0,
-          "acc": 0.75,
-          "f1": 0.8269230769230769,
-          "support_recall": 1.0
+          "judge": 1.0,
+          "em": 0.75,
+          "f1": 0.8,
+          "full_support": 1.0
         },
         "4": {
           "n": 8,
-          "judge_acc": 0.625,
-          "acc": 0.625,
-          "f1": 0.5964285714285714,
-          "support_recall": 0.90625
+          "judge": 0.75,
+          "em": 0.5,
+          "f1": 0.5714285714285714,
+          "full_support": 0.75
         }
       },
-      "n_passages": 6.0,
+      "n_passages": 5.0,
       "llm_calls": 2.0,
       "llm_failed_calls_total": 0,
-      "tokens": 3354.2,
-      "cost_usd": 0.000523695,
-      "llm_seconds": 4.3527000000000005,
-      "retrieval_seconds": 0.0634,
+      "tokens": 3487.25,
+      "cost_usd": 0.0005193999999999999,
+      "llm_seconds": 4.08045,
+      "retrieval_seconds": 0.06375,
       "searches": 1.0,
       "failures": {
-        "correct": 17,
+        "correct": 18,
         "retrieval_miss": 0,
-        "reasoning_miss": 3
+        "reasoning_miss": 2
       },
-      "acc_delta_vs_base": {
-        "mean": 0.25,
-        "ci95": [
-          0.1,
-          0.45
-        ]
+      "judge_gain_vs_base": {
+        "mean": 0.3,
+        "low95": 0.1,
+        "high95": 0.5
       }
     },
     "agentic": {
-      "judge_acc": 0.7,
-      "acc": 0.6,
-      "em": 0.55,
-      "f1": 0.623015873015873,
-      "support_recall": 0.9333333333333333,
-      "full_support": 0.75,
+      "judge": 0.9,
+      "em": 0.75,
+      "f1": 0.8344047619047619,
+      "support_recall": 0.9875,
+      "full_support": 0.95,
       "by_hops": {
         "2": {
           "n": 8,
-          "judge_acc": 1.0,
-          "acc": 0.875,
+          "judge": 1.0,
+          "em": 0.875,
           "f1": 0.9583333333333333,
-          "support_recall": 1.0
+          "full_support": 1.0
         },
         "3": {
           "n": 4,
-          "judge_acc": 0.75,
-          "acc": 0.5,
-          "f1": 0.5555555555555556,
-          "support_recall": 0.9166666666666666
+          "judge": 1.0,
+          "em": 0.75,
+          "f1": 0.8,
+          "full_support": 1.0
         },
         "4": {
           "n": 8,
-          "judge_acc": 0.375,
-          "acc": 0.375,
-          "f1": 0.32142857142857145,
-          "support_recall": 0.875
+          "judge": 0.75,
+          "em": 0.625,
+          "f1": 0.7276785714285714,
+          "full_support": 0.875
         }
       },
-      "n_passages": 3.95,
-      "llm_calls": 5.2,
+      "n_passages": 6.85,
+      "llm_calls": 5.75,
       "llm_failed_calls_total": 0,
-      "tokens": 7236.85,
-      "cost_usd": 0.0012032100000000001,
-      "llm_seconds": 12.0428,
-      "retrieval_seconds": 0.09465,
-      "searches": 2.1,
+      "tokens": 10130.4,
+      "cost_usd": 0.001578065,
+      "llm_seconds": 12.359950000000001,
+      "retrieval_seconds": 0.14285,
+      "searches": 2.45,
       "failures": {
-        "correct": 14,
-        "retrieval_miss": 3,
-        "reasoning_miss": 3
+        "correct": 18,
+        "retrieval_miss": 0,
+        "reasoning_miss": 2
       },
-      "acc_delta_vs_base": {
-        "mean": 0.1,
-        "ci95": [
-          -0.1,
-          0.3
-        ]
+      "judge_gain_vs_base": {
+        "mean": 0.3,
+        "low95": 0.1,
+        "high95": 0.5
       }
     },
     "oracle": {
-      "judge_acc": 0.85,
-      "acc": 0.75,
+      "judge": 0.85,
       "em": 0.65,
       "f1": 0.7744047619047618,
       "support_recall": 1.0,
@@ -168,24 +158,24 @@
       "by_hops": {
         "2": {
           "n": 8,
-          "judge_acc": 1.0,
-          "acc": 0.875,
+          "judge": 1.0,
+          "em": 0.875,
           "f1": 0.9583333333333333,
-          "support_recall": 1.0
+          "full_support": 1.0
         },
         "3": {
           "n": 4,
-          "judge_acc": 1.0,
-          "acc": 0.75,
+          "judge": 1.0,
+          "em": 0.5,
           "f1": 0.75,
-          "support_recall": 1.0
+          "full_support": 1.0
         },
         "4": {
           "n": 8,
-          "judge_acc": 0.625,
-          "acc": 0.625,
+          "judge": 0.625,
+          "em": 0.5,
           "f1": 0.6026785714285714,
-          "support_recall": 1.0
+          "full_support": 1.0
         }
       },
       "n_passages": 3.0,
@@ -201,16 +191,14 @@
         "retrieval_miss": 0,
         "reasoning_miss": 3
       },
-      "acc_delta_vs_base": {
+      "judge_gain_vs_base": {
         "mean": 0.25,
-        "ci95": [
-          0.1,
-          0.45
-        ]
+        "low95": 0.1,
+        "high95": 0.45
       }
     }
   },
   "split": "dev",
-  "judge_cost_usd": 0.0014142000000000002,
-  "total_cost_usd": 0.0413097
+  "judge_cost_usd": 0.0013502,
+  "total_cost_usd": 0.0486569
 }

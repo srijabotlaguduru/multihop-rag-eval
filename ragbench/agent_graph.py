@@ -16,7 +16,7 @@ from langgraph.graph import END, START, StateGraph
 
 from .data import Passage
 from .llm import LLM
-from .retrieval import Retriever
+from .retrieval import RERANK_CANDIDATES, TOP_K, Retriever
 
 
 class AgentState(TypedDict):
@@ -30,11 +30,13 @@ class AgentState(TypedDict):
     answer: str
 
 
-def build_agent(llm: LLM, r: Retriever, max_rounds: int = 4):
+def build_agent(llm: LLM, r: Retriever, max_rounds: int = 4, per_search: int = TOP_K):
     from .pipelines import REFLECT_SYSTEM, _dedupe, answer, fmt_passages
 
     def retrieve(s: AgentState) -> dict:
-        new = r.hybrid_llm_rerank(s["query"], llm, k=3, candidates=20)
+        # Every search keeps the same top-5 as llm_rerank and adds to what was already found:
+        # the first search is exactly llm_rerank's, so the agent can only gain evidence.
+        new = r.hybrid_llm_rerank(s["query"], llm, k=per_search, candidates=RERANK_CANDIDATES)
         return {
             "passages": _dedupe(s["passages"] + new),
             "seen_queries": s["seen_queries"] + [s["query"].lower()],
@@ -61,7 +63,8 @@ def build_agent(llm: LLM, r: Retriever, max_rounds: int = 4):
         }
 
     def answer_node(s: AgentState) -> dict:
-        ps = s["passages"][:12]
+        # all collected passages: 5 per search, up to 5 searches, duplicates removed
+        ps = s["passages"]
         return {"passages": ps, "answer": answer(llm, s["question"], ps)}
 
     def after_retrieve(s: AgentState) -> str:

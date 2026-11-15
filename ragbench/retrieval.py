@@ -23,7 +23,9 @@ DENSE_MODEL = "BAAI/bge-small-en-v1.5"
 BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 THREADS = int(os.getenv("RAGBENCH_THREADS", "6"))
 
-LLM_RERANK_CHARS = int(os.getenv("RAGBENCH_RERANK_CHARS", "600"))
+TOP_K = 5  # passages every pipeline keeps per search
+RERANK_CANDIDATES = 20  # hybrid candidates the LLM reranker reads (= all of a question's paragraphs)
+LLM_RERANK_CHARS = 2000  # the reranker reads the same full paragraph text as the answer step
 LLM_RERANK_SYSTEM = (
     "You rank passages for answering a question that may need several linked facts. "
     "Pick the {k} passages most useful for answering it. Include passages that are needed only in "

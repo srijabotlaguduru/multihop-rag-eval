@@ -7,4 +7,3 @@ __pycache__/
 data/
 runs/*/traces.jsonl
 runs/*.log
-runs/dev_agents/

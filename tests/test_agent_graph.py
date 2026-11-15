@@ -7,7 +7,7 @@ class FakeRetriever:
     def __init__(self):
         self.queries = []
 
-    def hybrid_llm_rerank(self, query, llm, k=3, candidates=20):
+    def hybrid_llm_rerank(self, query, llm, k=5, candidates=20):
         self.queries.append(query)
         base = len(self.queries) * 10
         return [Passage(base + i, f"{query}-{i}", "text") for i in range(k)]
@@ -44,7 +44,7 @@ def test_stops_when_enough():
 def test_follows_next_query_then_stops():
     out, _, r = run([{"enough": False, "next_query": "Shirley Temple"}, {"enough": True}])
     assert r.queries == ["Q?", "Shirley Temple"]
-    assert len(out["passages"]) == 6
+    assert len(out["passages"]) == 10  # 2 searches x top-5, all kept
 
 
 def test_repeated_query_stops_loop():
@@ -58,3 +58,10 @@ def test_round_budget_caps_searches():
     assert r.queries == ["Q?", "hop 0", "hop 1", "hop 2"]  # 1 initial + 3 follow-ups
     assert llm.answer_calls == 1
     assert sum("reflect" in t for t in out["trace"]) == 3
+
+
+def test_answer_sees_all_collected_passages():
+    many = [{"enough": False, "next_query": f"hop {i}"} for i in range(10)]
+    out, _, r = run(many, max_rounds=4)
+    assert len(r.queries) == 5
+    assert len(out["passages"]) == 25  # 5 searches x top-5, no cap

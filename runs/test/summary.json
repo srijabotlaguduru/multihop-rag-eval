@@ -1,216 +1,200 @@
 {
   "model": "gpt-5.6-luna",
-  "n_questions": 150,
+  "n_questions": 210,
   "corpus_passages": 18569,
   "corpus_questions": 2000,
   "seed": 13,
   "pipelines": {
     "hybrid": {
-      "judge_acc": 0.5333333333333333,
-      "acc": 0.43333333333333335,
-      "em": 0.3,
-      "f1": 0.4607008177008177,
-      "support_recall": 0.5322222222222222,
-      "full_support": 0.14,
+      "judge": 0.5428571428571428,
+      "em": 0.3333333333333333,
+      "f1": 0.4856170549027692,
+      "support_recall": 0.5496031746031746,
+      "full_support": 0.16666666666666666,
       "by_hops": {
         "2": {
-          "n": 50,
-          "judge_acc": 0.66,
-          "acc": 0.58,
-          "f1": 0.5574199134199135,
-          "support_recall": 0.64
+          "n": 70,
+          "judge": 0.6857142857142857,
+          "em": 0.45714285714285713,
+          "f1": 0.587408781694496,
+          "full_support": 0.3142857142857143
         },
         "3": {
-          "n": 50,
-          "judge_acc": 0.54,
-          "acc": 0.38,
-          "f1": 0.44992063492063494,
-          "support_recall": 0.5466666666666666
+          "n": 70,
+          "judge": 0.5285714285714286,
+          "em": 0.2571428571428571,
+          "f1": 0.45189136260564833,
+          "full_support": 0.14285714285714285
         },
         "4": {
-          "n": 50,
-          "judge_acc": 0.4,
-          "acc": 0.34,
-          "f1": 0.37476190476190474,
-          "support_recall": 0.41
+          "n": 70,
+          "judge": 0.4142857142857143,
+          "em": 0.2857142857142857,
+          "f1": 0.4175510204081633,
+          "full_support": 0.04285714285714286
         }
       },
       "n_passages": 5.0,
       "llm_calls": 1.0,
-      "llm_failed_calls_total": 0,
-      "tokens": 890.3,
-      "cost_usd": 0.00018168666666666666,
-      "llm_seconds": 2.69832,
-      "retrieval_seconds": 0.05945333333333333,
+      "tokens": 884.6,
+      "cost_usd": 0.0001745004761904762,
+      "llm_seconds": 2.4762761904761907,
+      "retrieval_seconds": 0.04501428571428571,
       "searches": 1.0,
       "failures": {
-        "correct": 80,
-        "retrieval_miss": 69,
-        "reasoning_miss": 1
+        "correct": 114,
+        "retrieval_miss": 93,
+        "reasoning_miss": 3
       },
-      "acc_delta_vs_base": {
+      "judge_gain_vs_base": {
         "mean": 0.0,
-        "ci95": [
-          0.0,
-          0.0
-        ]
+        "low95": 0.0,
+        "high95": 0.0
       }
     },
     "llm_rerank": {
-      "judge_acc": 0.78,
-      "acc": 0.6933333333333334,
-      "em": 0.5066666666666667,
-      "f1": 0.6673375875586401,
-      "support_recall": 0.9533333333333334,
-      "full_support": 0.86,
+      "judge": 0.7714285714285715,
+      "em": 0.5333333333333333,
+      "f1": 0.6818788770159845,
+      "support_recall": 0.9567460317460317,
+      "full_support": 0.8761904761904762,
       "by_hops": {
         "2": {
-          "n": 50,
-          "judge_acc": 0.82,
-          "acc": 0.74,
-          "f1": 0.7002699055330635,
-          "support_recall": 0.99
+          "n": 70,
+          "judge": 0.8714285714285714,
+          "em": 0.5428571428571428,
+          "f1": 0.7030693617159783,
+          "full_support": 0.9428571428571428
         },
         "3": {
-          "n": 50,
-          "judge_acc": 0.86,
-          "acc": 0.78,
-          "f1": 0.7533142857142857,
-          "support_recall": 0.94
+          "n": 70,
+          "judge": 0.7857142857142857,
+          "em": 0.5285714285714286,
+          "f1": 0.7105944802163289,
+          "full_support": 0.9
         },
         "4": {
-          "n": 50,
-          "judge_acc": 0.66,
-          "acc": 0.56,
-          "f1": 0.5484285714285714,
-          "support_recall": 0.93
+          "n": 70,
+          "judge": 0.6571428571428571,
+          "em": 0.5285714285714286,
+          "f1": 0.6319727891156462,
+          "full_support": 0.7857142857142857
         }
       },
-      "n_passages": 6.0,
+      "n_passages": 5.0,
       "llm_calls": 2.0,
-      "llm_failed_calls_total": 0,
-      "tokens": 3380.54,
-      "cost_usd": 0.000532384,
-      "llm_seconds": 5.6266066666666665,
-      "retrieval_seconds": 0.059946666666666676,
+      "tokens": 3609.9857142857145,
+      "cost_usd": 0.0005338390476190476,
+      "llm_seconds": 4.399042857142857,
+      "retrieval_seconds": 0.04416190476190476,
       "searches": 1.0,
       "failures": {
-        "correct": 117,
-        "retrieval_miss": 8,
-        "reasoning_miss": 25
+        "correct": 162,
+        "retrieval_miss": 13,
+        "reasoning_miss": 35
       },
-      "acc_delta_vs_base": {
-        "mean": 0.24666666666666667,
-        "ci95": [
-          0.16666666666666666,
-          0.32666666666666666
-        ]
+      "judge_gain_vs_base": {
+        "mean": 0.22857142857142856,
+        "low95": 0.1619047619047619,
+        "high95": 0.29523809523809524
       }
     },
     "agentic": {
-      "judge_acc": 0.7733333333333333,
-      "acc": 0.7066666666666667,
-      "em": 0.52,
-      "f1": 0.6764232238349885,
-      "support_recall": 0.92,
-      "full_support": 0.74,
+      "judge": 0.7761904761904762,
+      "em": 0.5380952380952381,
+      "f1": 0.6949405259179695,
+      "support_recall": 0.9777777777777779,
+      "full_support": 0.9238095238095239,
       "by_hops": {
         "2": {
-          "n": 50,
-          "judge_acc": 0.78,
-          "acc": 0.72,
-          "f1": 0.6721212121212122,
-          "support_recall": 0.98
+          "n": 70,
+          "judge": 0.8428571428571429,
+          "em": 0.5428571428571428,
+          "f1": 0.6973612602935911,
+          "full_support": 0.9714285714285714
         },
         "3": {
-          "n": 50,
-          "judge_acc": 0.84,
-          "acc": 0.76,
-          "f1": 0.7213865546218488,
-          "support_recall": 0.94
+          "n": 70,
+          "judge": 0.8142857142857143,
+          "em": 0.5285714285714286,
+          "f1": 0.7150082457225314,
+          "full_support": 0.9714285714285714
         },
         "4": {
-          "n": 50,
-          "judge_acc": 0.7,
-          "acc": 0.64,
-          "f1": 0.6357619047619048,
-          "support_recall": 0.84
+          "n": 70,
+          "judge": 0.6714285714285714,
+          "em": 0.5428571428571428,
+          "f1": 0.6724520717377861,
+          "full_support": 0.8285714285714286
         }
       },
-      "n_passages": 3.88,
-      "llm_calls": 5.033333333333333,
-      "llm_failed_calls_total": 0,
-      "tokens": 7090.24,
-      "cost_usd": 0.0011748073333333333,
-      "llm_seconds": 13.008273333333333,
-      "retrieval_seconds": 0.11590000000000002,
-      "searches": 2.026666666666667,
+      "n_passages": 6.214285714285714,
+      "llm_calls": 5.1,
+      "tokens": 8900.019047619047,
+      "cost_usd": 0.0013777400000000001,
+      "llm_seconds": 11.35178095238095,
+      "retrieval_seconds": 0.08896190476190476,
+      "searches": 2.0761904761904764,
       "failures": {
-        "correct": 116,
-        "retrieval_miss": 13,
-        "reasoning_miss": 21
+        "correct": 163,
+        "retrieval_miss": 7,
+        "reasoning_miss": 40
       },
-      "acc_delta_vs_base": {
-        "mean": 0.24,
-        "ci95": [
-          0.16,
-          0.32
-        ]
+      "judge_gain_vs_base": {
+        "mean": 0.23333333333333334,
+        "low95": 0.1619047619047619,
+        "high95": 0.3047619047619048
       }
     },
     "oracle": {
-      "judge_acc": 0.82,
-      "acc": 0.7133333333333334,
-      "em": 0.5333333333333333,
-      "f1": 0.7021487945605593,
+      "judge": 0.8,
+      "em": 0.5285714285714286,
+      "f1": 0.6993254119052439,
       "support_recall": 1.0,
       "full_support": 1.0,
       "by_hops": {
         "2": {
-          "n": 50,
-          "judge_acc": 0.88,
-          "acc": 0.76,
-          "f1": 0.741082094376212,
-          "support_recall": 1.0
+          "n": 70,
+          "judge": 0.9,
+          "em": 0.5857142857142857,
+          "f1": 0.7522921989308544,
+          "full_support": 1.0
         },
         "3": {
-          "n": 50,
-          "judge_acc": 0.84,
-          "acc": 0.76,
-          "f1": 0.7609430438842203,
-          "support_recall": 1.0
+          "n": 70,
+          "judge": 0.8428571428571429,
+          "em": 0.5142857142857142,
+          "f1": 0.7315055961778651,
+          "full_support": 1.0
         },
         "4": {
-          "n": 50,
-          "judge_acc": 0.74,
-          "acc": 0.62,
-          "f1": 0.6044212454212454,
-          "support_recall": 1.0
+          "n": 70,
+          "judge": 0.6571428571428571,
+          "em": 0.4857142857142857,
+          "f1": 0.6141784406070121,
+          "full_support": 1.0
         }
       },
       "n_passages": 3.0,
       "llm_calls": 1.0,
-      "llm_failed_calls_total": 0,
-      "tokens": 585.5133333333333,
-      "cost_usd": 0.000110208,
-      "llm_seconds": 1.8950600000000002,
+      "tokens": 586.7952380952381,
+      "cost_usd": 0.00010880809523809523,
+      "llm_seconds": 1.7845523809523811,
       "retrieval_seconds": 0.0,
       "searches": 0.0,
       "failures": {
-        "correct": 123,
+        "correct": 168,
         "retrieval_miss": 0,
-        "reasoning_miss": 27
+        "reasoning_miss": 42
       },
-      "acc_delta_vs_base": {
-        "mean": 0.2866666666666667,
-        "ci95": [
-          0.21333333333333335,
-          0.36666666666666664
-        ]
+      "judge_gain_vs_base": {
+        "mean": 0.2571428571428571,
+        "low95": 0.19047619047619047,
+        "high95": 0.32857142857142857
       }
     }
   },
   "split": "test",
-  "judge_cost_usd": 0.012774499999999996,
-  "total_cost_usd": 0.3126374
+  "judge_cost_usd": 0.0222986,
+  "total_cost_usd": 0.483225
 }

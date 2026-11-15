@@ -1,8 +1,8 @@
 """Answer and retrieval metrics.
 
-Answer metrics follow the official HotpotQA script (normalised exact match and
-token F1). "Accuracy" is a lenient match (gold answer contained in the
-prediction or vice versa) which is robust to small formatting differences.
+Answer metrics: the official MuSiQue / HotpotQA / SQuAD exact match (EM) and token F1, plus an
+LLM-as-a-judge check for answers EM marks wrong. Scores take the best match over the gold answer and
+its aliases. Text is NFKC-normalised first so Unicode dashes and spaces compare equal.
 """
 from __future__ import annotations
 
@@ -41,18 +41,6 @@ def f1(pred: str, gold: str) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
-def lenient_match(pred: str, gold: str) -> float:
-    p, g = normalize(pred), normalize(gold)
-    if not p or not g:
-        return 0.0
-    if g in {"yes", "no"}:
-        return float(p.split()[0] == g)
-    # whole-word containment either way (pred may be the gold plus a few words, or a
-    # sufficiently long part of it); padding with spaces prevents "us" matching "house"
-    pp, gg = f" {p} ", f" {g} "
-    return float(gg in pp or (pp in gg and len(p.split()) >= max(1, len(g.split()) // 2)))
-
-
 def support_recall(retrieved_ids: list, gold_ids: list) -> float:
     """Fraction of gold evidence paragraphs that were retrieved."""
     if not gold_ids:
@@ -76,7 +64,7 @@ JUDGE_SYSTEM = (
 
 
 def judge_match(llm, question: str, pred: str, golds: list[str]) -> float:
-    """LLM-as-judge semantic match, used only when the strict string metrics say "wrong"."""
+    """LLM-as-a-judge: does the prediction mean the same as the gold answer? Only called when EM is 0."""
     if not pred.strip():
         return 0.0
     out = llm.chat_json(

@@ -1,26 +1,44 @@
-Model `gpt-5.6-luna` · 150 MuSiQue-Ans test split (seed 13) · MuSiQue official setting: each question searches its own 20 paragraphs · total cost $0.31
+Model `gpt-5.6-luna` · 210 MuSiQue-Ans test split · MuSiQue official setting: each question searches its own 20 paragraphs · total cost $0.48
 
-| Pipeline | Accuracy (judge) | Accuracy (strict) | EM | F1 | Gold-evidence recall | All hops retrieved | Δ judge acc vs hybrid (95% CI) | LLM calls / q | Tokens / q | $ / 1k q |
+| Pipeline | LLM-as-a-judge | F1 | EM | All needed paragraphs found | Passages given to the model | Searches / q | Gain over hybrid | LLM calls / q | Tokens / q | $ / 1k q |
 |---|---|---|---|---|---|---|---|---|---|---|
-| hybrid | 53.3% | 43.3% | 30.0% | 0.461 | 53.2% | 14.0% | — | 1.0 | 890 | 0.18 |
-| llm_rerank | 78.0% | 69.3% | 50.7% | 0.667 | 95.3% | 86.0% | +24.7% [+16.7%, +32.7%] | 2.0 | 3,381 | 0.53 |
-| agentic | 77.3% | 70.7% | 52.0% | 0.676 | 92.0% | 74.0% | +24.0% [+16.0%, +32.0%] | 5.0 | 7,090 | 1.17 |
-| oracle | 82.0% | 71.3% | 53.3% | 0.702 | 100.0% | 100.0% | +28.7% [+21.3%, +36.7%] | 1.0 | 586 | 0.11 |
+| hybrid | 54.3% | 48.6% | 33.3% | 16.7% | 5.0 | 1.0 | — | 1.0 | 885 | 0.17 |
+| llm_rerank | 77.1% | 68.2% | 53.3% | 87.6% | 5.0 | 1.0 | +22.9 pts | 2.0 | 3,610 | 0.53 |
+| agentic | 77.6% | 69.5% | 53.8% | 92.4% | 6.2 | 2.1 | +23.3 pts | 5.1 | 8,900 | 1.38 |
+| oracle | 80.0% | 69.9% | 52.9% | 100.0% | 3.0 | 0.0 | +25.7 pts | 1.0 | 587 | 0.11 |
 
-**Judge accuracy by number of hops** (gold-evidence recall in brackets)
+**LLM-as-a-judge by number of hops** · questions per hop: 2-hop: 70, 3-hop: 70, 4-hop: 70
 
-| Pipeline | 2-hop (n=50) | 3-hop (n=50) | 4-hop (n=50) |
+| Pipeline | 2-hop | 3-hop | 4-hop |
 |---|---|---|---|
-| hybrid | 66.0% (64%) | 54.0% (55%) | 40.0% (41%) |
-| llm_rerank | 82.0% (99%) | 86.0% (94%) | 66.0% (93%) |
-| agentic | 78.0% (98%) | 84.0% (94%) | 70.0% (84%) |
-| oracle | 88.0% (100%) | 84.0% (100%) | 74.0% (100%) |
+| hybrid | 68.6% | 52.9% | 41.4% |
+| llm_rerank | 87.1% | 78.6% | 65.7% |
+| agentic | 84.3% | 81.4% | 67.1% |
+| oracle | 90.0% | 84.3% | 65.7% |
 
-**Where the errors come from**
+**F1 by number of hops** · questions per hop: 2-hop: 70, 3-hop: 70, 4-hop: 70
 
-| Pipeline | Correct | Retrieval miss (a gold passage never retrieved) | Reasoning miss (all gold passages retrieved, wrong answer) |
+| Pipeline | 2-hop | 3-hop | 4-hop |
 |---|---|---|---|
-| hybrid | 80 | 69 | 1 |
-| llm_rerank | 117 | 8 | 25 |
-| agentic | 116 | 13 | 21 |
-| oracle | 123 | 0 | 27 |
+| hybrid | 58.7% | 45.2% | 41.8% |
+| llm_rerank | 70.3% | 71.1% | 63.2% |
+| agentic | 69.7% | 71.5% | 67.2% |
+| oracle | 75.2% | 73.2% | 61.4% |
+
+**EM by number of hops** · questions per hop: 2-hop: 70, 3-hop: 70, 4-hop: 70
+
+| Pipeline | 2-hop | 3-hop | 4-hop |
+|---|---|---|---|
+| hybrid | 45.7% | 25.7% | 28.6% |
+| llm_rerank | 54.3% | 52.9% | 52.9% |
+| agentic | 54.3% | 52.9% | 54.3% |
+| oracle | 58.6% | 51.4% | 48.6% |
+
+**Where the errors come from** · retrieval miss = a needed paragraph was never found; reasoning miss = every needed paragraph was found but the answer was wrong
+
+| Pipeline | Correct | Retrieval miss | Reasoning miss |
+|---|---|---|---|
+| hybrid | 114 | 93 | 3 |
+| llm_rerank | 162 | 13 | 35 |
+| agentic | 163 | 7 | 40 |
+| oracle | 168 | 0 | 42 |

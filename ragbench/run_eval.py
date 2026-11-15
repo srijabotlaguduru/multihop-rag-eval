@@ -5,6 +5,10 @@ official setting (each question searches its own 20 paragraphs).
 
 Writes runs/<name>/traces.jsonl (per question/pipeline), summary.json and results.md.
 Safe to interrupt and re-run: LLM calls are cached, so it resumes where it stopped.
+
+Metrics: LLM-as-a-judge accuracy (headline; EM first, the judge only checks answers EM marks
+wrong), F1 and EM against the gold answer and its aliases, evidence recall, and a
+retrieval-miss vs reasoning-miss split of the errors.
 """
 from __future__ import annotations
 
@@ -17,13 +21,13 @@ from pathlib import Path
 
 from . import data
 from .llm import LLM
-from .metrics import exact_match, f1, failure_type, judge_match, lenient_match, support_recall
+from .metrics import exact_match, f1, failure_type, judge_match, support_recall
 from .pipelines import DEFAULT_PIPELINES, PIPELINES
 from .retrieval import Retriever
 
 
 def evaluate(split: str, pipelines: list[str], out: Path, n: int | None = None, corpus_questions: int = 2000,
-             seed: int = 13, judge: bool = True) -> dict:
+             seed: int = 13) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     questions, passages = data.load(corpus_questions, seed)
     sample = data.split(questions, split, seed)[:n]
@@ -45,10 +49,10 @@ def evaluate(split: str, pipelines: list[str], out: Path, n: int | None = None, 
                 pids = [p.pid for p in res["passages"]]
                 sr = support_recall(pids, q.support_pids)
                 golds = [q.answer] + q.aliases
-                acc = max(lenient_match(res["answer"], g) for g in golds)
-                jacc = acc
-                if judge and not acc:
-                    jacc = judge_match(llm, q.question, res["answer"], golds)
+                em = max(exact_match(res["answer"], g) for g in golds)
+                judge = em
+                if not em:  # the judge only checks answers that don't match exactly
+                    judge = judge_match(llm, q.question, res["answer"], golds)
                     judge_cost += llm.reset_usage().cost_usd
                 row = {
                     "qid": q.id,
@@ -58,17 +62,15 @@ def evaluate(split: str, pipelines: list[str], out: Path, n: int | None = None, 
                     "gold": q.answer,
                     "aliases": q.aliases,
                     "pred": res["answer"],
-                    "em": max(exact_match(res["answer"], g) for g in golds),
+                    "judge": judge,
+                    "em": em,
                     "f1": max(f1(res["answer"], g) for g in golds),
-                    "acc": acc,
-                    "judge_acc": jacc,
                     "support_recall": sr,
                     "full_support": float(sr == 1.0),
                     "n_passages": len(pids),
-                    "failure": failure_type(bool(jacc), sr == 1.0),
+                    "failure": failure_type(bool(judge), sr == 1.0),
                     "cost_usd": u.cost_usd,
                     "llm_calls": u.calls,
-                    "llm_failed_calls": u.failed_calls,
                     "prompt_tokens": u.prompt_tokens,
                     "completion_tokens": u.completion_tokens,
                     "llm_seconds": round(u.api_seconds, 3),
@@ -82,10 +84,10 @@ def evaluate(split: str, pipelines: list[str], out: Path, n: int | None = None, 
                 fh.write(json.dumps(row) + "\n")
                 fh.flush()
             if qi % 10 == 0 or qi == len(sample):
-                running = {p: sum(r["judge_acc"] for r in rows if r["pipeline"] == p) / qi for p in pipelines}
+                running = {p: sum(r["judge"] for r in rows if r["pipeline"] == p) / qi for p in pipelines}
                 spent = sum(r["cost_usd"] for r in rows) + judge_cost
                 print(
-                    f"[{qi}/{len(sample)}] {time.time() - t0:.0f}s ${spent:.3f}  "
+                    f"[{qi}/{len(sample)}] {time.time() - t0:.0f}s ${spent:.3f}  judge: "
                     + "  ".join(f"{p}={v:.2f}" for p, v in running.items()),
                     flush=True,
                 )
@@ -104,7 +106,7 @@ def _mean(xs):
 
 
 def paired_bootstrap(a: list[float], b: list[float], iters: int = 5000, seed: int = 0) -> tuple[float, float, float]:
-    """95% CI of mean(b - a) over paired questions."""
+    """Mean of b - a over paired questions, and the range that holds in 95% of 5,000 re-samples."""
     rng = random.Random(seed)
     d = [y - x for x, y in zip(a, b)]
     n = len(d)
@@ -124,10 +126,9 @@ def summarize(rows, pipelines, model, corpus_q, corpus_size, seed) -> dict:
         "pipelines": {},
     }
     for p, rs in by.items():
-        delta, lo, hi = paired_bootstrap([r["judge_acc"] for r in by[base]], [r["judge_acc"] for r in rs])
+        delta, lo, hi = paired_bootstrap([r["judge"] for r in by[base]], [r["judge"] for r in rs])
         out["pipelines"][p] = {
-            "judge_acc": _mean(r["judge_acc"] for r in rs),
-            "acc": _mean(r["acc"] for r in rs),
+            "judge": _mean(r["judge"] for r in rs),
             "em": _mean(r["em"] for r in rs),
             "f1": _mean(r["f1"] for r in rs),
             "support_recall": _mean(r["support_recall"] for r in rs),
@@ -135,16 +136,15 @@ def summarize(rows, pipelines, model, corpus_q, corpus_size, seed) -> dict:
             "by_hops": {
                 str(h): {
                     "n": sum(r["hops"] == h for r in rs),
-                    "judge_acc": _mean(r["judge_acc"] for r in rs if r["hops"] == h),
-                    "acc": _mean(r["acc"] for r in rs if r["hops"] == h),
+                    "judge": _mean(r["judge"] for r in rs if r["hops"] == h),
+                    "em": _mean(r["em"] for r in rs if r["hops"] == h),
                     "f1": _mean(r["f1"] for r in rs if r["hops"] == h),
-                    "support_recall": _mean(r["support_recall"] for r in rs if r["hops"] == h),
+                    "full_support": _mean(r["full_support"] for r in rs if r["hops"] == h),
                 }
                 for h in sorted({r["hops"] for r in rs})
             },
             "n_passages": _mean(r["n_passages"] for r in rs),
             "llm_calls": _mean(r["llm_calls"] for r in rs),
-            "llm_failed_calls_total": sum(r.get("llm_failed_calls", 0) for r in rs),
             "tokens": _mean(r["prompt_tokens"] + r["completion_tokens"] for r in rs),
             "cost_usd": _mean(r["cost_usd"] for r in rs),
             "llm_seconds": _mean(r["llm_seconds"] for r in rs),
@@ -153,7 +153,7 @@ def summarize(rows, pipelines, model, corpus_q, corpus_size, seed) -> dict:
             "failures": {
                 k: sum(r["failure"] == k for r in rs) for k in ("correct", "retrieval_miss", "reasoning_miss")
             },
-            "acc_delta_vs_base": {"mean": delta, "ci95": [lo, hi]},
+            "judge_gain_vs_base": {"mean": delta, "low95": lo, "high95": hi},
         }
     return out
 
@@ -161,41 +161,36 @@ def summarize(rows, pipelines, model, corpus_q, corpus_size, seed) -> dict:
 def to_markdown(s: dict) -> str:
     P = s["pipelines"]
     base = next(iter(P))
-    where = "MuSiQue official setting: each question searches its own 20 paragraphs"
     split = f"{s['split']} split" if s.get("split") else "questions"
     lines = [
-        f"Model `{s['model']}` · {s['n_questions']} MuSiQue-Ans {split} (seed {s['seed']}) · {where}"
+        f"Model `{s['model']}` · {s['n_questions']} MuSiQue-Ans {split} · MuSiQue official setting: each question "
+        f"searches its own 20 paragraphs"
         + (f" · total cost ${s['total_cost_usd']:.2f}" if "total_cost_usd" in s else ""),
         "",
-        "| Pipeline | Accuracy (judge) | Accuracy (strict) | EM | F1 | Gold-evidence recall | All hops retrieved | "
-        f"Δ judge acc vs {base} (95% CI) | LLM calls / q | Tokens / q | $ / 1k q |",
+        f"| Pipeline | LLM-as-a-judge | F1 | EM | All needed paragraphs found | Passages given to the model | "
+        f"Searches / q | Gain over {base} | LLM calls / q | Tokens / q | $ / 1k q |",
         "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for p, m in P.items():
-        d = m["acc_delta_vs_base"]
-        delta = "—" if p == base else f"{d['mean']:+.1%} [{d['ci95'][0]:+.1%}, {d['ci95'][1]:+.1%}]"
+        gain = "—" if p == base else f"{100 * m['judge_gain_vs_base']['mean']:+.1f} pts"
         lines.append(
-            f"| {p} | {m.get('judge_acc', m['acc']):.1%} | {m['acc']:.1%} | {m['em']:.1%} | {m['f1']:.3f} | "
-            f"{m['support_recall']:.1%} | {m['full_support']:.1%} | {delta} | {m['llm_calls']:.1f} | "
-            f"{m['tokens']:,.0f} | {1000 * m.get('cost_usd', 0):.2f} |"
+            f"| {p} | {m['judge']:.1%} | {m['f1']:.1%} | {m['em']:.1%} | {m['full_support']:.1%} | "
+            f"{m['n_passages']:.1f} | {m['searches']:.1f} | {gain} | {m['llm_calls']:.1f} | {m['tokens']:,.0f} | "
+            f"{1000 * m['cost_usd']:.2f} |"
         )
-    lines += [
-        "",
-        "**Judge accuracy by number of hops** (gold-evidence recall in brackets)",
-        "",
-    ]
     hops = list(next(iter(P.values()))["by_hops"])
-    lines += ["| Pipeline | " + " | ".join(f"{h}-hop (n={P[base]['by_hops'][h]['n']})" for h in hops) + " |",
-              "|---|" + "---|" * len(hops)]
-    for p, m in P.items():
-        lines.append(f"| {p} | " + " | ".join(
-            f"{m['by_hops'][h].get('judge_acc', m['by_hops'][h]['acc']):.1%} "
-            f"({m['by_hops'][h]['support_recall']:.0%})" for h in hops) + " |")
+    n_each = ", ".join(f"{h}-hop: {P[base]['by_hops'][h]['n']}" for h in hops)
+    for metric, title, fmt in (("judge", "LLM-as-a-judge", "{:.1%}"), ("f1", "F1", "{:.1%}"), ("em", "EM", "{:.1%}")):
+        lines += ["", f"**{title} by number of hops** · questions per hop: {n_each}", "",
+                  "| Pipeline | " + " | ".join(f"{h}-hop" for h in hops) + " |", "|---|" + "---|" * len(hops)]
+        for p, m in P.items():
+            lines.append(f"| {p} | " + " | ".join(fmt.format(m["by_hops"][h][metric]) for h in hops) + " |")
     lines += [
         "",
-        "**Where the errors come from**",
+        "**Where the errors come from** · retrieval miss = a needed paragraph was never found; "
+        "reasoning miss = every needed paragraph was found but the answer was wrong",
         "",
-        "| Pipeline | Correct | Retrieval miss (a gold passage never retrieved) | Reasoning miss (all gold passages retrieved, wrong answer) |",
+        "| Pipeline | Correct | Retrieval miss | Reasoning miss |",
         "|---|---|---|---|",
     ]
     for p, m in P.items():
@@ -206,17 +201,16 @@ def to_markdown(s: dict) -> str:
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--split", choices=["dev", "test"], required=True, help="dev (100) or held-out test (150)")
+    ap.add_argument("--split", choices=["dev", "test"], required=True, help="dev (100) or held-out test (210)")
     ap.add_argument("--n", type=int, default=None, help="only the first N questions of the split")
     ap.add_argument("--pipelines", default=",".join(DEFAULT_PIPELINES))
     ap.add_argument("--out", required=True)
-    ap.add_argument("--no-judge", action="store_true", help="skip the LLM judge (strict metrics only)")
     a = ap.parse_args(argv)
     pipes = [p.strip() for p in a.pipelines.split(",") if p.strip()]
     bad = [p for p in pipes if p not in PIPELINES]
     if bad:
         sys.exit(f"unknown pipelines: {bad}")
-    s = evaluate(a.split, pipes, Path(a.out), n=a.n, judge=not a.no_judge)
+    s = evaluate(a.split, pipes, Path(a.out), n=a.n)
     print()
     print(to_markdown(s))
 

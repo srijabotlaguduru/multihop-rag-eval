@@ -109,15 +109,21 @@ def sample(questions: list[Question], n: int, seed: int = 13, exclude: set[str] 
     return out
 
 
-DEV_N = 100  # the original 100-question sample, used for development and ablations
-TEST_N = 150
+DEV_N = 100  # the original 100-question sample, used for development decisions
+TEST_FIRST_N = 150  # the original held-out test questions
+TEST_EXTRA_N = 60  # added later for more questions per hop
+TEST_N = TEST_FIRST_N + TEST_EXTRA_N  # 210 = 70 per hop
 
 
 def split(questions: list[Question], name: str, seed: int = 13) -> list[Question]:
-    """dev = the standard 100-question sample; test = 150 different questions, never used for tuning."""
+    """dev = the standard 100-question sample; test = 210 different questions, never used for tuning.
+    The test set is the original 150 followed by 60 more, so earlier results stay comparable."""
     dev = sample(questions, DEV_N, seed)
     if name == "dev":
         return dev
     if name == "test":
-        return sample(questions, TEST_N, seed + 1, exclude={q.id for q in dev})
+        exclude = {q.id for q in dev}
+        first = sample(questions, TEST_FIRST_N, seed + 1, exclude=exclude)
+        extra = sample(questions, TEST_EXTRA_N, seed + 2, exclude=exclude | {q.id for q in first})
+        return first + extra
     raise ValueError(f"unknown split {name!r}")
